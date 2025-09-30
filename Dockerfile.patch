@@ -4,6 +4,7 @@ FROM $MY_IMAGE
 
 ARG PATCH_LIST=patch-list.txt
 ARG REPO_LIST=ubi9.repo
+ARG PYTHON_VERSION=python3.12
 ENV PATCH_FILE="${PATCH_LIST}"
 ENV REPO_FILE="${REPO_LIST}"
 
@@ -12,7 +13,7 @@ COPY patch-image.sh /bin/
 
 RUN echo "patch list file: ${PATCH_FILE}" \
  && if [ ! "$(ls -A /etc/yum.repos.d/)" ]; then cp /tmp/${REPO_FILE} /etc/yum.repos.d/; fi \
- && dnf install -y git python3.12 python3.12-pip python3.12-setuptools wget unzip patch \
+ && dnf install -y git ${PYTHON_VERSION} ${PYTHON_VERSION}-pip ${PYTHON_VERSION}-setuptools wget unzip patch \
  && /bin/patch-image.sh \
  && rm -f /bin/patch-image.sh \
  && dnf clean all \

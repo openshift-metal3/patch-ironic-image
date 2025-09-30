@@ -28,8 +28,8 @@ do
             git fetch "$PROJ_URL" "$REFSPEC"
             git checkout FETCH_HEAD
 
-            SKIP_GENERATE_AUTHORS=1 SKIP_WRITE_GIT_CHANGELOG=1 python3.12 setup.py sdist
-            python3.12 -m pip install --prefix /usr dist/*.tar.gz
+            SKIP_GENERATE_AUTHORS=1 SKIP_WRITE_GIT_CHANGELOG=1 ${PYTHON_VERSION} setup.py sdist
+            ${PYTHON_VERSION} -m pip install --prefix /usr dist/*.tar.gz
 
             # clean local repo
             cd ..
@@ -37,7 +37,7 @@ do
             ;;
 
         PATCH)
-            PYTHON_LIB_PATH=$(python3.12 -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
+            PYTHON_LIB_PATH=$(${PYTHON_VERSION} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
             PATCH_URL=$(echo $line | cut -d " " -f3)
 
             cd /tmp

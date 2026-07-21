@@ -6,8 +6,8 @@ patch_file="/tmp/${PATCH_LIST}"
 
 while IFS= read -r line
 do
-    EXEC=$(echo $line | cut -d " " -f1)
-    echo $EXEC
+    EXEC=$(echo "$line" | cut -d " " -f1)
+    echo "$EXEC"
 
     case $EXEC in
 
@@ -17,10 +17,10 @@ do
             # for example openstack/ironic
             # - refspec is the gerrit refspec of the patch we want to test,
             # for example refs/changes/67/759567/1
-            PROJECT=$(echo $line | cut -d " " -f2)
-            PROJ_NAME=$(echo $PROJECT | cut -d "/" -f2)
-            PROJ_URL="https://opendev.org/$PROJECT"
-            REFSPEC=$(echo $line | cut -d " " -f3)
+            PROJECT=$(echo "$line" | cut -d " " -f2)
+            PROJ_NAME=$(echo "$PROJECT" | cut -d "/" -f2)
+            PROJ_URL="https://opendev.org/${PROJECT}"
+            REFSPEC=$(echo "$line" | cut -d " " -f3)
 
             cd /tmp
             git clone "$PROJ_URL"
@@ -38,14 +38,14 @@ do
 
         PATCH)
             PYTHON_LIB_PATH=$(${PYTHON_VERSION} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
-            PATCH_URL=$(echo $line | cut -d " " -f3)
+            PATCH_URL=$(echo "$line" | cut -d " " -f3)
 
             cd /tmp
-            wget --content-disposition $PATCH_URL
-            ZIPPED_PATCH_FILE=$(ls -Art *.zip | tail -n 1)
-            unzip $ZIPPED_PATCH_FILE
-            PATCH_FILE=$(basename $ZIPPED_PATCH_FILE .zip)
-            patch -d$PYTHON_LIB_PATH -f -N -p1 < $PATCH_FILE || true
+            wget --content-disposition "$PATCH_URL"
+            ZIPPED_PATCH_FILE=$(find . -maxdepth 1 -name '*.zip' -printf '%T@ %p\n' | sort -n | tail -n 1 | cut -d' ' -f2)
+            unzip "$ZIPPED_PATCH_FILE"
+            PATCH_FILE=$(basename "$ZIPPED_PATCH_FILE" .zip)
+            patch -d"${PYTHON_LIB_PATH}" -f -N -p1 < "$PATCH_FILE" || true
 
             # clean patch file
             rm -f "$PATCH_FILE"

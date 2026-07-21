@@ -1,0 +1,1 @@
+disable=SC1091 # can't follow dynamically sourced library files

@@ -45,6 +45,29 @@ do
             ZIPPED_PATCH_FILE=$(find . -maxdepth 1 -name '*.zip' -printf '%T@ %p\n' | sort -n | tail -n 1 | cut -d' ' -f2)
             unzip "$ZIPPED_PATCH_FILE"
             PATCH_FILE=$(basename "$ZIPPED_PATCH_FILE" .zip)
+
+            # The container contains the installed package, not its source
+            # tree.  Install requirements added by the patch separately.
+            CHANGED_REQUIREMENTS_FILE="${PATCH_FILE}.requirements"
+            awk '
+                /^diff --git / {
+                    in_requirements = ($0 ~ / b\/requirements\.txt$/)
+                    next
+                }
+                in_requirements && /^\+\+\+ / { next }
+                in_requirements && /^\+/ {
+                    requirement = substr($0, 2)
+                    if (requirement !~ /^[[:space:]]*($|#)/) print requirement
+                }
+            ' "$PATCH_FILE" > "$CHANGED_REQUIREMENTS_FILE"
+
+            if [ -s "$CHANGED_REQUIREMENTS_FILE" ]; then
+                echo "Installing requirements added by $PATCH_FILE"
+                ${PYTHON_VERSION} -m pip install --no-cache-dir \
+                    -r "$CHANGED_REQUIREMENTS_FILE"
+            fi
+
+            rm -f "$CHANGED_REQUIREMENTS_FILE"
             patch -d"${PYTHON_LIB_PATH}" -f -N -p1 < "$PATCH_FILE" || true
 
             # clean patch file

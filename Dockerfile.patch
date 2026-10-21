@@ -13,6 +13,7 @@ COPY patch-image.sh /bin/
 
 RUN echo "patch list file: ${PATCH_FILE}" \
  && if [ ! "$(ls -A /etc/yum.repos.d/)" ]; then cp /tmp/${REPO_FILE} /etc/yum.repos.d/; fi \
+ && if ! command -v dnf >/dev/null 2>&1; then microdnf install -y dnf; fi \
  && dnf install -y git ${PYTHON_VERSION} ${PYTHON_VERSION}-pip ${PYTHON_VERSION}-setuptools wget unzip patch \
  && /bin/patch-image.sh \
  && rm -f /bin/patch-image.sh \
